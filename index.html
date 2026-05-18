@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">BLOG</div>
+        <input type="checkbox" id="menu-toggle" class="toggle-checkbox">
+        <label for="menu-toggle" class="menu-icon">
+            <i class="fas fa-bars"></i>
+        </label>
+        <nav class="nav-links">
+            <a href="#">Home</a>
+            <a href="#">About</a>
+            <a href="#">Blog</a>
+            <a href="#">Contact</a>
+        </nav>
+    </header>
+
+    <h1 class="main-title">Blog Posts</h1>
+    
+    <main class="container" id="blog-container"></main>
+
+    <section class="form-section">
+        <h2>Add a New Blog</h2>
+        <form id="new-blog-form">
+            <div class="form-group">
+                <label for="blog-title">Title:</label>
+                <input type="text" id="blog-title" placeholder="Enter blog title...">
+                <span class="error-msg" id="title-error"></span>
+            </div>
+            <div class="form-group">
+                <label for="blog-desc">Description:</label>
+                <textarea id="blog-desc" rows="5" placeholder="Enter blog description..."></textarea>
+                <span class="error-msg" id="desc-error"></span>
+            </div>
+            <button type="submit" class="submit-btn">Submit Post</button>
+        </form>
+    </section>
+
+    <footer class="footer"> 
+        <p>Footer</p>
+        <div class="social-links">
+            <a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+            <a href="https://facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

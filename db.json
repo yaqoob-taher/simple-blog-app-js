@@ -1,0 +1,10 @@
+{
+  "blogs": [
+    {
+      "title": "Talal",
+      "description": "YacoubTaher",
+      "id": "lZLwBnLJjZQ"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
