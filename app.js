@@ -1,112 +1,41 @@
 const API_URL = "http://localhost:3000/blogs";
 
-// DOM Elements (Document object model)
+// DOM Elements: Selecting elements from the HTML page
 const blogContainer = document.getElementById("blog-container");
 const blogForm = document.getElementById("new-blog-form");
 const titleInput = document.getElementById("blog-title");
 const descInput = document.getElementById("blog-desc");
-
 const titleError = document.getElementById("title-error");
 const descError = document.getElementById("desc-error");
 
-// Step 4a: Fetch and Render Blogs from db.json 
-//Gets blogs from server and displays them on page
-//Server → fetch() → response → JSON → JavaScript array → renderBlogs()
+// Step 1: Get Blogs from the server and show them on the screen 
 async function fetchBlogs() {
     try {
-        // wait for server response 
-        // fetch(API_URL) -> Sends HTTP request to server.
-        // await -> WAIT until server responds
-        // const response -> stores server response object.
-
+        // Send request to the local server and wait for response
         const response = await fetch(API_URL);
-
-        // response.json() -> Server sends JSON text
-        //.json() converts it into REAL JavaScript array:
-        // await -> wait until json converts into JavaScript object
-        // Store final JavaScript array in variable:blogs 
-
+        // Convert the incoming data text into a real JavaScript array
         const blogs = await response.json();
-
-        // we send blogs array to another function.
-        //Take blogs array and display cards in HTML.
-        //Then renderBlogs() creates cards dynamically.
-
+        // Send the array to the display function
         renderBlogs(blogs);
-
-    }
-    //Runs ONLY if error happens inside try blo 
-    catch (error) {
-        // Prints error in console.
-        /*
-        | console.error() | error message "Prints critical failure messages." |
-        Errors usually appear RED in console.
-        */
+    } catch (error) {
         console.error("Error fetching data from server:", error);
-        //Changes HTML content inside container.
+        // Show a red warning on the screen if the server is off
         blogContainer.innerHTML = `<p style="color:red; text-align:center;">Failed to load system blogs.</p>`;
     }
 }
-
-/* Takes blogs array and displays blog cards inside HTML
-   
-*/
 function renderBlogs(blogs) {
-    //Clears all old HTML inside container.
-    blogContainer.innerHTML = ""; // Clear existing elements
-    // cheack if empty 
-    if(blogs.length === 0) {
+    // Clear old layout cards before adding updated ones
+    blogContainer.innerHTML = ""; 
+    // If there are no blogs in db.json, show an empty state message
+    if (blogs.length === 0) {
         blogContainer.innerHTML = `<p style="color:#7f8c8d; text-align:center; width:100%;">No blogs found. Add one below!</p>`;
-        /*STOP function here 
-        Because if no blogs exist:
-        There’s no reason to continue loop.
-        */
         return;
     }
-// Loop through every blog object.
+    // Loop over each blog object to build dynamic HTML cards
     blogs.forEach(blog => {
-
-        // flow : create empty div element and adds CSS class named card
-        // Then CSS automatically styles it.
-        //Creates NEW HTML element using JavaScript.
         const card = document.createElement("div");
-        /*Add CSS class "card" to the element
-        card This variable contains HTML element created earlier:
-        classList -> classList is a JavaScript property used to manage CSS classes.
-        It can:add classes, remove classes, toggle classes
-        like this in html <div class="card"></div>
-        */
         card.classList.add("card");
-        /*
-        This is called:
-        Dynamic Rendering
-        Instead of writing HTML manually, JavaScript generates it automatically from data.
         
-        This code builds the HTML content INSIDE the card dynamically.
-        card.innerHTML -> Insert HTML inside this element
-        Template Literals -> `` -> multi-line HTML, variable insertion
-        <div class="card-image">
-            <i class="far fa-image"></i>
-        </div>
-        Shows gray image icon.
-
-        <div class="card-content">
-        Container for: title, description, delete button 
-        
-        Creates trash/delete icon. 
-        <i class="fas fa-trash-alt delete-btn"></i>
-        data-id="${blog.id}" -> Custom HTML attribute
-        To store blog ID inside HTML element..So when user clicks delete:
-        JavaScript knows WHICH blog to delete.
-        ${} -> Insert JavaScript value here
-        become:
-        <i class="delete-btn" data-id="5"></i>
-
-        title -> <h3>${escapeHTML(blog.title)}</h3> 
-        Creates blog title.
- blog object -> template literal->generate HTML->insert into card->show on page
-
-        */
         card.innerHTML = `
             <div class="card-image">
                 <i class="far fa-image"></i>
@@ -117,166 +46,138 @@ function renderBlogs(blogs) {
                 <p>${blog.description}</p>
             </div>
         `;
-        /* The card exists in JS memory 
-            puts the card inside: main 
-            card appears on screen 
-
-        */
         blogContainer.appendChild(card);
     });
-
-    // Attach deletion event listeners after creating elements
-    /*
-    querySelectorAll -> Find ALL elements matching selector.
-    Loop through every delete button.
-    addEventListener() -> Listen for an event
-    "click" -> when user click button, run this code 
-    e -> event object
-    .target -> The exact element user clicked
-    getAttribute() -> Gets attribute value from HTML element.
-    "data-id" -> custom HTML attribute stores extra information inside an HTML element.
-    */
+    // Find all trash buttons and attach a click listener to delete
     document.querySelectorAll(".delete-btn").forEach(button => {
         button.addEventListener("click", (e) => {
-            //Which blog user wants to delete
             const id = e.target.getAttribute("data-id");
-            // call delete function 
             deleteBlog(id);
         });
     });
 }
-
-// Step 4b: Delete blog item from backend and update view
-/*
-This function Deletes a blog from db.json using json-server
-User clicks delete ->Get blog id -> Send DELETE request
--> Remove blog from db.json->Reload blogs 
-
-function receives blog id 
-why use confirm() -> to prevent accidental deletion 
-deleting something by mistake 
-confirm() -> Built-in function shows pop-up message.
-browser shows [ OK ]   [ Cancel ]
-ok -> true -> continue deletion 
-Cancel -> false ->Stop function 
-Template Literal builds URL dynamically.
-we want to delete specific blog.
-
-*/
+// Step 2: Delete a blog item
 async function deleteBlog(id) {
+    // Show a popup confirmation box to prevent accidental clicks
     if (confirm("Are you sure you want to delete this blog post?")) {
         try {
-            await fetch(`${API_URL}/${id}`, {
-                method: "DELETE"
-            });// to delete specific item(id)
-            // Re-fetch clean list state
-            fetchBlogs();
-            //Reload updated blogs from server.
-            // page must refresh automatically
+            // Send standard HTTP DELETE request for this specific blog ID
+            await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+            // Refresh the list immediately from the database
+            fetchBlogs(); 
         } catch (error) {
             console.error("Error deleting post:", error);
         }
     }
 }
 
-// Step 4: Regex Field Form Validations and Submissions
+//Step 3: Single Function Live Form Validation (Using simple If/Else)
+
+
+// Regex rules to look for specific language and character types
+const REGEX_ARABIC = /[\u0600-\u06FF]/; // Catches Arabic alphabet text
+const REGEX_CAPITAL = /^[A-Z]/;        // Checks if index 0 is an uppercase letter
+// Catches actual special symbols like $ or @ without blocking spaces
+const REGEX_SPECIAL = /[\$@#!%\^&\*\(\)_\+\-=\{\}\[\]:;"'<>\,\.\?\/~`|\\\u00A0-\u00BF\u2000-\u206F]/; 
+
+function validateField(inputElement) {
+    const value = inputElement.value;         // Raw value typed by user (important for spaces/capital checks)
+    const trimmedValue = value.trim();        // Clean value without extra side spaces (important for lengths)
+    let errorMessage = "";
+
+    // CHECKING THE TITLE FIELD 
+    if (inputElement === titleInput) {
+        
+        if (trimmedValue.length === 0) {
+            errorMessage = "Title is required.";
+        } 
+        else if (trimmedValue.length >= 50) {
+            errorMessage = "Title must be less than 50 characters.";
+        } 
+        else if (REGEX_ARABIC.test(value)) {
+            // Checks for Arabic characters first so it won't conflict with special characters
+            errorMessage = "Only English letters are allowed. Arabic is not supported.";
+        } 
+        else if (REGEX_SPECIAL.test(value)) {
+            // Checks if user types code symbols like $
+            errorMessage = "Special characters are not allowed.";
+        } 
+        else if (/\d/.test(value)) {
+            // Checks if user types numeric numbers
+            errorMessage = "Numbers are not allowed in the title.";
+        } 
+        else if (!REGEX_CAPITAL.test(value)) {
+            // Ensures the text starts with an upper case English letter
+            errorMessage = "The first letter of the title must be capitalized.";
+        }
+
+        // Print the custom warning string dynamically into the title error space
+        titleError.textContent = errorMessage;
+    } 
+    // CHECKING THE DESCRIPTION FIELD 
+    else if (inputElement === descInput) {
+        
+        if (trimmedValue.length === 0) {
+            errorMessage = "Description is required.";
+        } 
+        else if (trimmedValue.length >= 1000) {
+            errorMessage = "Description must be less than 1000 characters.";
+        } 
+        else if (REGEX_ARABIC.test(value)) {
+            // Catches Arabic letters inside the description box
+            errorMessage = "Description must be written in English only.";
+        } 
+        else if (REGEX_SPECIAL.test(value)) {
+            // Catches symbols like $ inside the description box
+            errorMessage = "Special characters are not allowed in description.";
+        }
+
+        // Print the custom warning string dynamically into the description error space
+        descError.textContent = errorMessage;
+    }
+
+    // Returns true if there is no error text (field is perfectly valid)
+    return errorMessage === "";
+}
+
+// Listen to the input event live so the function triggers on every single keystroke!
+titleInput.addEventListener("input", () => validateField(titleInput));
+descInput.addEventListener("input", () => validateField(descInput));
+
+
+//Step 4: Form Submission Handling
+
 blogForm.addEventListener("submit", async (e) => {
-    //Stop the default behavior of the event
-    /*
-    For a form submit, the default behavior is:
-        1. Send form data
-        2. Reload the page
-    stops the browser from doing its normal action
-    */
+    // Prevent default browser refreshing action when hitting submit
     e.preventDefault();
 
-    
-    // Reset error alerts
-    //  Removes previous error messages from the screen.
-    //  when user tries again, old errors don’t stay visible.
-    titleError.textContent = "";
-    descError.textContent = "";
-    // titleInput.value → text user typed
-    // trim() → removes spaces at start/end
-    const titleVal = titleInput.value.trim();
-    const descVal = descInput.value.trim();
-    //assume form is valid at first.
-    let isValid = true;
+    // Re-verify both fields one last time at submit for security
+    const isTitleValid = validateField(titleInput);
+    const isDescValid = validateField(descInput);
 
-    /* Title Validation Rules:
-      - Only English letters and spaces: ^[a-zA-Z ]+$
-      - First letter must be Capitalized: ^[A-Z]
-      - Character length under 50 characters
-        ^ Start of the string
-        [a-zA-Z ] small letters	capital letters	space character
-        + One or more characters -> text must NOT be empty
-        $ -> End of string
-      */
+    // Cancel submission if either input fails its validation conditions
+    if (!isTitleValid || !isDescValid) return;
 
-    const titleRegex = /^[a-zA-Z ]+$/;
-    //Check if title is empty
-    if (!titleVal) {
-        titleError.textContent = "Title is required.";
-        isValid = false;
-    } else if (titleVal.length >= 50) {
-        titleError.textContent = "Title must be less than 50 characters.";
-        isValid = false;
-    } else if (!/^[A-Z]/.test(titleVal)) {
-        titleError.textContent = "The first letter of the title must be capitalized.";
-        isValid = false;
-        //Only English letters and spaces
-    } else if (!titleRegex.test(titleVal)) {
-        titleError.textContent = "Only English characters and spaces are allowed.";
-        isValid = false;
-    }
-
-    /* Description Validation Rules:
-      - Only English letters and spaces: ^[a-zA-Z ]+$
-      - Character length under 1000 characters
-    */
-    const descRegex = /^[a-zA-Z ]+$/;
-    if (!descVal) {
-        descError.textContent = "Description is required.";
-        isValid = false;
-    } else if (descVal.length >= 1000) {
-        descError.textContent = "Description must be less than 1000 characters.";
-        isValid = false;
-    } else if (!descRegex.test(descVal)) {
-        descError.textContent = "Only English characters and spaces are allowed (No special symbols or punctuation).";
-        isValid = false;
-    }
-
-    // Stop post routine if validation parameters fail
-    if (!isValid) return;
-
-    // Send verified data bundle payload to local database environment
+    // Create a clean payload object to send to backend server database
     const newBlog = {
-        title: titleVal,
-        description: descVal
+        title: titleInput.value.trim(),
+        description: descInput.value.trim()
     };
 
     try {
-        // send data to the server (send request to server)
-        // method: "POST" Add new data to server
-        // “ tell server I am sending JSON data”
-        //Convert JavaScript object → JSON format
-        //Wait until server finishes saving data
+        // Send a standard POST request with data formatted into JSON text strings
         await fetch(API_URL, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newBlog)
         });
 
-        // Reset form inputs & update dynamic content container feed
-        blogForm.reset();//Clear form inputs after success.
-        //refresh blogs Get updated blogs from server and show them again.
-        fetchBlogs();
+        blogForm.reset(); // Empty form entry values upon success
+        fetchBlogs();     // Refresh the list cards feed layout automatically
     } catch (error) {
-        console.error("Error creating blog post submission entry:", error);
+        console.error("Error creating blog post:", error);
     }
 });
 
-// Initial Boot Run 
+// Run the application initial boot setup routine
 fetchBlogs();
